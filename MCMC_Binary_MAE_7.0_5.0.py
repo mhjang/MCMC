@@ -5,13 +5,11 @@ import math
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import random
+original_img = np.genfromtxt('stripes.txt')
+noisy_img = np.genfromtxt('stripes-noise.txt')
 
-
-#original_img = np.genfromtxt('stripes.txt')
-#noisy_img = np.genfromtxt('stripes-noise.txt')
-
-original_img = np.genfromtxt('swirl.txt')
-noisy_img = np.genfromtxt('swirl-noise.txt')
+#original_img = np.genfromtxt('swirl.txt')
+#noisy_img = np.genfromtxt('swirl-noise.txt')
 
 np.set_printoptions(threshold='nan')
 
@@ -26,8 +24,6 @@ def generateSample(t, W_p, W_l):
     y = np.copy(noisy_img)
 
     while(1):
- #   for iteration in range(100):
-        y = np.copy(y)
         for i in range(100):
             for j in range(100):
                 neighbors = get_neighbors((i,j))
@@ -38,82 +34,51 @@ def generateSample(t, W_p, W_l):
                 prob_y_ij = norm / denorm
          #       alpha = 0.3
                 alpha = random.uniform(0, 1)
+     #           print(prob_y_ij)
+     #           alpha = 0.5
                 if alpha < prob_y_ij:
                     y[i][j] = 1
                 else:
                     y[i][j] = 0
         samples.append(y)
         prev_mae = cur_mae
-        cur_mae = calMAE(sum(samples)/(len(samples)))
+        cur_mae = calMAE(sum(samples)/((iteration+1)))
+   #     if (sum(samples)/(iteration+1)).all() == y.all():
+   #         print("same")
         maes.append(cur_mae)
       #  print(len(samples))
-   #     iteration += 1
+        iteration += 1
   #      print(abs((cur_mae - prev_mae)))
         if abs((cur_mae - prev_mae)) < 0.0001:
             break
-#        print(y)
+  #      print(y)
   #      print(sum(samples)/((k+1)))
   #  print(maes)
     # plotting the error
-   # print("done")
+    print("done")
     fig1 = plt.figure()
     ax1 = fig1.add_subplot(111)
     ax1.set_title("Error rate")
-    ax1.plot(range(len(maes)), maes)
+    ax1.plot(range(iteration), maes)
     ax1.set_ylabel("MAE")
 
     plt.show()
-  #  print(sum(samples))
-    return sum(samples)/(len(samples))
-
+    return sum(samples)/t
 
 
 def gaussianModel(w_p, w_l):
     y = np.copy(noisy_img)
     samples = list()
-    maes = list()
-    curmae = 0.0
-    prevmae= 0.0
-    while(1):
-  #  for iteration in range(100):
-        y = np.copy(y)
+    for k in range(100):
         for i in range(100):
             for j in range(100):
                 neighbors = get_neighbors((i, j))
                 variance = 1.0/(2.0*(w_p*len(neighbors) + w_l))
-                mu = (1.0/((w_p*len(neighbors) + w_l)))*((w_l*noisy_img[i][j] + sum([w_p * y[k][l] for (k, l) in neighbors])))
-                z = np.random.normal(0, 1)
+                mu = 1.0/((w_p*len(neighbors) + w_l))*((w_l*noisy_img[i][j] + sum([w_p * y[k][l] for (k, l) in neighbors])))
+                z = np.random.normal(mu, variance)
                 y[i][j] = mu + z*math.sqrt(variance)
         samples.append(y)
-        prevmae = curmae
-        curmae = calMAE((sum(samples)/(len(samples))))
-        maes.append(curmae)
-        if math.fabs(curmae - prevmae) < 0.0001:
-            break
-    #    print(len(samples))
-    fig1 = plt.figure()
-    ax1 = fig1.add_subplot(111)
-    ax1.set_title("Error rate")
-    ax1.plot(range(len(maes)), maes)
-    ax1.set_ylabel("MAE")
-    return sum(samples)/(len(samples))
-
-
-def gaussianModel2(w_p, w_l):
-    y = np.copy(noisy_img)
-    samples = list()
-    for iteration in range(100):
-        y = np.copy(y)
-        for i in range(100):
-            for j in range(100):
-                neighbors = get_neighbors((i, j))
-                w_p_neighborSum = sum([(w_p/(0.01 + math.pow((noisy_img[i][j] - noisy_img[k][l]), 2))) for (k,l) in neighbors])
-                variance = 1.0/(2.0*(w_p_neighborSum + w_l))
-                mu = (1.0/(w_p_neighborSum + w_l))*((w_l*noisy_img[i][j] + sum([(w_p/(0.01 + math.pow((noisy_img[i][j] - noisy_img[k][l]), 2))) * y[k][l] for (k, l) in neighbors])))
-                z = np.random.normal(0, 1)
-                y[i][j] = mu + z*math.sqrt(variance)
-        samples.append(y)
-        calMAE((sum(samples)/len(samples)))
+        calMAE((sum(samples)/(k+1)))
         print(len(samples))
 
 
@@ -163,15 +128,14 @@ def calMAE(y):
     return error/(100*100)
 
 def main():
-    W_p = 10
-    W_l = 15
-
-#    s = gaussianModel(W_p, W_l)
-    gaussianModel2(W_p, W_l)
-#    s = generateSample(100, W_p, W_l)
-  #  plot(s)
+    W_p = 7.0
+    W_l = 5.0
+#    gaussianModel(W_p, W_l)
+    s = generateSample(100, W_p, W_l)
+ #   plot(s)
    # print(str(W_p) + ", " + str(w_l))
-    calMAE(s)
+#    calMAE(s)
+#    s = s.__ceil__()
 #    print(s)
   #  s = generateSample(100, 0, 178)
   #  calMAE(s)
