@@ -2,8 +2,8 @@ __author__ = 'mhjang'
 
 import numpy as np
 import math
-import matplotlib.pyplot as plt
-from matplotlib import cm
+#import matplotlib.pyplot as plt
+#from matplotlib import cm
 import random
 
 
@@ -109,7 +109,8 @@ def gaussianModel2(w_p, w_l):
                 neighbors = get_neighbors((i, j))
                 w_p_neighborSum = sum([(w_p/(0.01 + math.pow((noisy_img[i][j] - noisy_img[k][l]), 2))) for (k,l) in neighbors])
                 variance = 1.0/(2.0*(w_p_neighborSum + w_l))
-                mu = (1.0/(w_p_neighborSum + w_l))*((w_l*noisy_img[i][j] + sum([(w_p/(0.01 + math.pow((noisy_img[i][j] - noisy_img[k][l]), 2))) * y[k][l] for (k, l) in neighbors])))
+                mu = (1.0/(w_p_neighborSum + w_l))*((w_l*noisy_img[i][j] +
+                    sum([(w_p/(0.01 + math.pow((noisy_img[i][j] - noisy_img[k][l]), 2))) * y[k][l] for (k, l) in neighbors])))
                 z = np.random.normal(0, 1)
                 y[i][j] = mu + z*math.sqrt(variance)
         samples.append(y)
@@ -163,7 +164,7 @@ def calMAE(y):
     return error/(100*100)
 
 def main():
-    W_p = 10
+    W_p = 70
     W_l = 15
 
 #    s = gaussianModel(W_p, W_l)
